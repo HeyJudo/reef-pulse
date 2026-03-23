@@ -1,22 +1,71 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Layout } from '../components/Layout'
-import { BubbleBackground } from '../components/BubbleBackground'
-import { WaveDivider } from '../components/WaveDivider'
 import { AnimatedCounter } from '../components/AnimatedCounter'
+import { BubbleBackground } from '../components/BubbleBackground'
+import {
+  ActivitySquareIcon,
+  AnchorIcon,
+  BadgeDollarIcon,
+  DatabaseIcon,
+  FactoryIcon,
+  ShieldCheckIcon,
+  ThermometerIcon,
+} from '../components/LandingIcons'
+import { Layout } from '../components/Layout'
+import { WaveDivider } from '../components/WaveDivider'
 import { evidenceItems } from '../data/evidence'
-import { pipelineStages, heroStats, prototypeDisclaimer } from '../data/pipeline'
+import { heroStats, pipelineStages, prototypeDisclaimer } from '../data/pipeline'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0 },
 }
 
+const crisisCards = [
+  {
+    icon: ThermometerIcon,
+    title: '293 Marine Heatwave Days',
+    body: 'Driven by El Nino, regions like Lingayen Gulf endure devastating temperature spikes that trigger multi-species mortality across vulnerable coral networks (DOST/UPMSI).',
+  },
+  {
+    icon: FactoryIcon,
+    title: '51% Habitat Decline',
+    body: `In Palawan's "last ecological frontier," unregulated nickel mining and coastal development are actively smothering pristine offshore reefs under toxic laterite siltation.`,
+  },
+  {
+    icon: AnchorIcon,
+    title: '0% in "Excellent" Condition',
+    body: 'A recent nationwide assessment confirmed zero Philippine reefs remain in excellent condition, worsened by a systemic capture fishery loss of 45,000 metric tons annually.',
+  },
+  {
+    icon: BadgeDollarIcon,
+    title: '$4 Billion at Stake',
+    body: 'The collapse of these ecosystems threatens the food security of a nation where over 42% of animal protein intake relies directly on rapidly declining marine resources.',
+  },
+]
+
+const solutionPillars = [
+  {
+    icon: DatabaseIcon,
+    title: 'Translating Big Data',
+    body: 'We ingest massive datasets—including nearly 100 million eDNA molecular reads, satellite sea surface temperatures, and localized siltation reports—and translate them into a unified, visual dashboard. No more drowning in static 50-page PDF reports.',
+  },
+  {
+    icon: ActivitySquareIcon,
+    title: 'Simulating Cascading Effects',
+    body: "Threats don't exist in isolation. ReefPulse's predictive engine calculates how overlapping pressures interact in real-time. Watch how a slight temperature bump becomes a catastrophic bleaching event when a reef is already weakened by mining runoff.",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: 'Testing Policy Before Spending',
+    body: 'We provide Local Government Units (LGUs) and NGOs with a visual "time machine." Adjust the restoration budget, simulate interventions like fishing bans or siltation controls, and mathematically prove which actions will actually save the reef before deploying limited public funds.',
+  },
+]
+
 export function HomePage() {
   return (
     <Layout>
       <main>
-        {/* ── Hero: The Hook ── */}
         <section className="hero">
           <BubbleBackground />
           <motion.div
@@ -36,15 +85,15 @@ export function HomePage() {
             </h1>
             <p className="hero-desc">
               ReefPulse PH transforms a decade of NOAA satellite data, Allen Coral Atlas
-              imagery, and eDNA biodiversity surveys into an interactive risk model — so
+              imagery, and eDNA biodiversity surveys into an interactive risk model, so
               policymakers can see which reefs will bleach <em>before</em> it happens.
             </p>
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/simulate">
-                🔬 Open Data Explorer
+                Open Data Explorer
               </Link>
               <a className="btn btn-secondary" href="#crisis">
-                See the pipeline ↓
+                See the pipeline
               </a>
             </div>
           </motion.div>
@@ -73,7 +122,6 @@ export function HomePage() {
 
         <WaveDivider />
 
-        {/* ── The Crisis ── */}
         <section className="section" id="crisis">
           <motion.div
             className="section-header"
@@ -88,36 +136,15 @@ export function HomePage() {
               The Coral Triangle is collapsing under compounding pressures.
             </h2>
             <p className="section-desc">
-              The Philippines sits at the center of the world's most biodiverse marine
-              region. Its reefs support 25% of all marine fish species and the livelihoods
-              of 1.5M+ Filipino fishers — but they face simultaneous threats that static
-              monitoring cannot capture.
+              The Philippines sits at the apex of the Coral Triangle, supporting 1.5M+
+              livelihoods. But static monitoring is failing to capture the real-time,
+              cascading threats destroying these ecosystems. Here is what the latest data
+              reveals:
             </p>
           </motion.div>
 
           <div className="about-grid">
-            {[
-              {
-                icon: '🌡️',
-                title: '+1.2°C since 1990',
-                body: 'Sea surface temperature anomaly in Philippine waters, triggering mass bleaching events cascading across connected reef networks.',
-              },
-              {
-                icon: '🏗️',
-                title: '47% of rivers at critical load',
-                body: 'Mining and agricultural runoff delivers sediment that smothers coral polyps and blocks photosynthesis across coastal reef systems.',
-              },
-              {
-                icon: '🎣',
-                title: '60% of sites overharvested',
-                body: 'Herbivorous fish removal lets algae outcompete slow-growing coral. Dynamite and cyanide fishing cause irreversible structural damage.',
-              },
-              {
-                icon: '⚓',
-                title: '3,000+ hectares damaged per decade',
-                body: 'Anchoring, vessel grounding, and storm events physically break coral structures that take 20–50 years to recover.',
-              },
-            ].map((item, i) => (
+            {crisisCards.map((item, i) => (
               <motion.article
                 key={item.title}
                 className="about-card glass-card"
@@ -127,7 +154,9 @@ export function HomePage() {
                 variants={fadeUp}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <div className="about-icon">{item.icon}</div>
+                <div className="about-icon">
+                  <item.icon />
+                </div>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </motion.article>
@@ -137,7 +166,47 @@ export function HomePage() {
 
         <WaveDivider flip />
 
-        {/* ── The Pipeline ── */}
+        <section className="section">
+          <motion.div
+            className="section-header"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="section-eyebrow">WHERE REEFPULSE COMES INTO PLAY</span>
+            <h2 className="section-title">From Big Data to Proactive Policy</h2>
+            <p className="section-desc">
+              ReefPulse PH turns fragmented marine evidence into an interactive front-end
+              visualization layer, bridging raw ecological signals with policy-ready
+              scenario testing.
+            </p>
+          </motion.div>
+
+          <div className="solution-grid">
+            {solutionPillars.map((pillar, i) => (
+              <motion.article
+                key={pillar.title}
+                className="solution-card glass-card"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                variants={fadeUp}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+              >
+                <div className="solution-icon">
+                  <pillar.icon />
+                </div>
+                <div className="solution-copy">
+                  <h3>{pillar.title}</h3>
+                  <p>{pillar.body}</p>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </section>
+
         <section className="section">
           <motion.div
             className="section-header"
@@ -152,8 +221,8 @@ export function HomePage() {
               From raw satellite feeds to actionable reef forecasts.
             </h2>
             <p className="section-desc">
-              ReefPulse PH is the visualization layer of a 4-stage Big Data pipeline
-              that transforms Earth observation data into zone-level reef risk predictions.
+              ReefPulse PH is the visualization layer of a 4-stage Big Data pipeline that
+              transforms Earth observation data into zone-level reef risk predictions.
             </p>
           </motion.div>
 
@@ -179,7 +248,6 @@ export function HomePage() {
 
         <WaveDivider />
 
-        {/* ── Ground Truth ── */}
         <section className="section">
           <motion.div
             className="section-header"
@@ -190,12 +258,10 @@ export function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <span className="section-eyebrow">GROUND TRUTH</span>
-            <h2 className="section-title">
-              Field data validates what the models predict.
-            </h2>
+            <h2 className="section-title">Field data validates what the models predict.</h2>
             <p className="section-desc">
-              Real-world reporting from Philippine and international sources confirms
-              the degradation patterns our pipeline is designed to detect and forecast.
+              Real-world reporting from Philippine and international sources confirms the
+              degradation patterns our pipeline is designed to detect and forecast.
             </p>
           </motion.div>
 
@@ -210,24 +276,18 @@ export function HomePage() {
                 variants={fadeUp}
                 transition={{ duration: 0.5, delay: i * 0.12 }}
               >
-                <span className="source-badge">📄 {item.source}</span>
+                <span className="source-badge">{item.source}</span>
                 <span className="date-chip">{item.date}</span>
                 <h3>{item.title}</h3>
                 <p>{item.summary}</p>
-                <a
-                  className="read-link"
-                  href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Read source →
+                <a className="read-link" href={item.href} target="_blank" rel="noreferrer">
+                  Read source
                 </a>
               </motion.article>
             ))}
           </div>
         </section>
 
-        {/* ── CTA ── */}
         <motion.section
           className="cta-section"
           initial="hidden"
@@ -242,13 +302,12 @@ export function HomePage() {
             bleaching risk, and fish habitat shift across 16 connected zones in real time.
           </p>
           <Link className="btn btn-primary" to="/simulate" style={{ marginTop: 8 }}>
-            🔬 Launch Data Explorer
+            Launch Data Explorer
           </Link>
         </motion.section>
 
-        {/* ── Prototype Disclaimer ── */}
         <div className="disclaimer-banner">
-          <span className="disc-icon">⚠️</span>
+          <span className="disc-icon">!</span>
           <div>
             <span className="disc-label">Prototype Notice</span>
             <span className="disc-text">{prototypeDisclaimer}</span>

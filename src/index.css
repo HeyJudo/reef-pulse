@@ -999,8 +999,61 @@ img { max-width: 100%; display: block; }
 }
 
 .about-card .about-icon {
-  font-size: 1.8rem;
   margin-bottom: 14px;
+}
+
+.about-card .about-icon,
+.solution-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(144, 224, 239, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: var(--ocean-foam);
+}
+
+.about-card .about-icon svg,
+.solution-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.solution-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.solution-card {
+  padding: 30px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 100%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.06);
+}
+
+.solution-copy h3 {
+  font-family: var(--heading);
+  font-size: 1.24rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin: 0 0 10px;
+}
+
+.solution-copy p {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  margin: 0;
 }
 
 /* ───────────── Simulation Insight ───────────── */
@@ -1084,7 +1137,8 @@ img { max-width: 100%; display: block; }
 
   .stats-row,
   .evidence-grid,
-  .steps-grid {
+  .steps-grid,
+  .solution-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1187,6 +1241,12 @@ img { max-width: 100%; display: block; }
 @media (max-width: 900px) {
   .pipeline-flow {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .solution-grid {
+    grid-template-columns: 1fr;
   }
 }
 
