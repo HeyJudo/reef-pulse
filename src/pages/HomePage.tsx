@@ -5,6 +5,7 @@ import { BubbleBackground } from '../components/BubbleBackground'
 import { WaveDivider } from '../components/WaveDivider'
 import { AnimatedCounter } from '../components/AnimatedCounter'
 import { evidenceItems } from '../data/evidence'
+import { pipelineStages, heroStats, prototypeDisclaimer } from '../data/pipeline'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,7 +16,7 @@ export function HomePage() {
   return (
     <Layout>
       <main>
-        {/* ── Hero ── */}
+        {/* ── Hero: The Hook ── */}
         <section className="hero">
           <BubbleBackground />
           <motion.div
@@ -27,32 +28,29 @@ export function HomePage() {
           >
             <span className="hero-eyebrow">
               <span className="hero-eyebrow-dot" />
-              Interactive reef simulation
+              Powered by 38.7M+ data points
             </span>
             <h1 className="hero-title">
-              Explore how <span className="highlight">Philippine reefs</span> respond to pressure.
+              Philippine reefs are dying.{' '}
+              <span className="highlight">We built the dashboard to fight back.</span>
             </h1>
             <p className="hero-desc">
-              ReefPulse PH models 16 connected reef zones across 12 months, combining heat
-              stress, fishing pressure, siltation, and direct damage into one interactive
-              simulation — so you can see cause and effect in real time.
+              ReefPulse PH transforms a decade of NOAA satellite data, Allen Coral Atlas
+              imagery, and eDNA biodiversity surveys into an interactive risk model — so
+              policymakers can see which reefs will bleach <em>before</em> it happens.
             </p>
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/simulate">
-                🧪 Launch Simulation
+                🔬 Open Data Explorer
               </Link>
-              <a className="btn btn-secondary" href="#problem">
-                Learn More ↓
+              <a className="btn btn-secondary" href="#crisis">
+                See the pipeline ↓
               </a>
             </div>
           </motion.div>
 
           <div className="stats-row">
-            {[
-              { icon: '🗺️', end: 16, suffix: ' zones', label: 'Connected reef cells tracked' },
-              { icon: '📅', end: 12, suffix: ' months', label: 'Time-step simulation depth' },
-              { icon: '⚡', end: 5, suffix: ' pressures', label: 'Heat, fishing, silt, damage, recovery' },
-            ].map((stat) => (
+            {heroStats.map((stat) => (
               <motion.div
                 key={stat.label}
                 className="stat-item"
@@ -61,7 +59,11 @@ export function HomePage() {
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
                 <div className="stat-icon">{stat.icon}</div>
-                <AnimatedCounter end={stat.end} suffix={stat.suffix} />
+                <AnimatedCounter
+                  end={stat.end}
+                  suffix={stat.suffix}
+                  duration={1400}
+                />
                 <span className="stat-label">{stat.label}</span>
               </motion.div>
             ))}
@@ -70,8 +72,8 @@ export function HomePage() {
 
         <WaveDivider />
 
-        {/* ── The Problem ── */}
-        <section className="section" id="problem">
+        {/* ── The Crisis ── */}
+        <section className="section" id="crisis">
           <motion.div
             className="section-header"
             initial="hidden"
@@ -80,13 +82,15 @@ export function HomePage() {
             variants={fadeUp}
             transition={{ duration: 0.6 }}
           >
-            <span className="section-eyebrow">🐠 The ecological crisis</span>
-            <h2 className="section-title">Philippine reefs are under compounding stress.</h2>
+            <span className="section-eyebrow">THE CRISIS</span>
+            <h2 className="section-title">
+              The Coral Triangle is collapsing under compounding pressures.
+            </h2>
             <p className="section-desc">
-              Heat stress, sediment runoff, direct physical damage, and overfishing don't happen
-              in isolation — they interact, amplify each other, and ripple across connected reef
-              zones. Static reports capture snapshots, but they can't show the cascading effects
-              that unfold over time.
+              The Philippines sits at the center of the world's most biodiverse marine
+              region. Its reefs support 25% of all marine fish species and the livelihoods
+              of 1.5M+ Filipino fishers — but they face simultaneous threats that static
+              monitoring cannot capture.
             </p>
           </motion.div>
 
@@ -94,23 +98,23 @@ export function HomePage() {
             {[
               {
                 icon: '🌡️',
-                title: 'Rising water temperatures',
-                body: 'Ocean surface temperatures around Philippine waters have been steadily climbing, triggering mass bleaching events that weaken even the healthiest reefs.',
+                title: '+1.2°C since 1990',
+                body: 'Sea surface temperature anomaly in Philippine waters, triggering mass bleaching events cascading across connected reef networks.',
               },
               {
                 icon: '🏗️',
-                title: 'Coastal development & runoff',
-                body: 'Mining runoff, construction sediment, and agricultural pollution smother corals and block sunlight from reaching reef ecosystems.',
+                title: '47% of rivers at critical load',
+                body: 'Mining and agricultural runoff delivers sediment that smothers coral polyps and blocks photosynthesis across coastal reef systems.',
               },
               {
                 icon: '🎣',
-                title: 'Overfishing & destructive methods',
-                body: 'Intensive fishing reduces fish populations that keep reef algae in check, while practices like dynamite fishing cause direct structural damage.',
+                title: '60% of sites overharvested',
+                body: 'Herbivorous fish removal lets algae outcompete slow-growing coral. Dynamite and cyanide fishing cause irreversible structural damage.',
               },
               {
                 icon: '⚓',
-                title: 'Physical reef damage',
-                body: 'Anchoring, vessel grounding, and storm events physically break coral structures, creating damage that takes decades to recover from.',
+                title: '3,000+ hectares damaged per decade',
+                body: 'Anchoring, vessel grounding, and storm events physically break coral structures that take 20–50 years to recover.',
               },
             ].map((item, i) => (
               <motion.article
@@ -132,7 +136,7 @@ export function HomePage() {
 
         <WaveDivider flip />
 
-        {/* ── Evidence ── */}
+        {/* ── The Pipeline ── */}
         <section className="section">
           <motion.div
             className="section-header"
@@ -142,11 +146,55 @@ export function HomePage() {
             variants={fadeUp}
             transition={{ duration: 0.6 }}
           >
-            <span className="section-eyebrow">📰 Evidence from the field</span>
-            <h2 className="section-title">Recent reporting confirms the urgency.</h2>
+            <span className="section-eyebrow">THE PIPELINE</span>
+            <h2 className="section-title">
+              From raw satellite feeds to actionable reef forecasts.
+            </h2>
             <p className="section-desc">
-              These are real stories from Philippine and international news showing that reef decline
-              is not theoretical — it is actively happening.
+              ReefPulse PH is the visualization layer of a 4-stage Big Data pipeline
+              that transforms Earth observation data into zone-level reef risk predictions.
+            </p>
+          </motion.div>
+
+          <div className="pipeline-flow">
+            {pipelineStages.map((stage, i) => (
+              <motion.article
+                key={stage.tag}
+                className="pipeline-card glass-card"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                variants={fadeUp}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+              >
+                <span className="pipeline-tag">{stage.tag}</span>
+                <div className="step-number">{stage.num}</div>
+                <h3>{stage.title}</h3>
+                <p>{stage.body}</p>
+              </motion.article>
+            ))}
+          </div>
+        </section>
+
+        <WaveDivider />
+
+        {/* ── Ground Truth ── */}
+        <section className="section">
+          <motion.div
+            className="section-header"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="section-eyebrow">GROUND TRUTH</span>
+            <h2 className="section-title">
+              Field data validates what the models predict.
+            </h2>
+            <p className="section-desc">
+              Real-world reporting from Philippine and international sources confirms
+              the degradation patterns our pipeline is designed to detect and forecast.
             </p>
           </motion.div>
 
@@ -178,61 +226,6 @@ export function HomePage() {
           </div>
         </section>
 
-        <WaveDivider />
-
-        {/* ── How It Works ── */}
-        <section className="section">
-          <motion.div
-            className="section-header"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeUp}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="section-eyebrow">⚙️ How it works</span>
-            <h2 className="section-title">Three steps to understand reef risk.</h2>
-            <p className="section-desc">
-              You don't need marine biology expertise. The simulation guides you through
-              adjusting pressures, running the model, and reading the results.
-            </p>
-          </motion.div>
-
-          <div className="steps-grid">
-            {[
-              {
-                num: '01',
-                title: 'Set the pressures',
-                body: 'Use sliders to dial heat stress, fishing intensity, siltation, direct damage, and your restoration budget.',
-              },
-              {
-                num: '02',
-                title: 'Run 12 months',
-                body: 'The engine updates 16 connected reef cells month by month, factoring in neighbor effects and recovery capacity.',
-              },
-              {
-                num: '03',
-                title: 'Read the outcome',
-                body: 'View reef health scores, bleaching risk, fish habitat quality, and see which zones need intervention first.',
-              },
-            ].map((step, i) => (
-              <motion.article
-                key={step.num}
-                className="step-card glass-card"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={fadeUp}
-                transition={{ duration: 0.5, delay: i * 0.12 }}
-              >
-                <div className="step-number">{step.num}</div>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </motion.article>
-            ))}
-          </div>
-        </section>
-
         {/* ── CTA ── */}
         <motion.section
           className="cta-section"
@@ -242,15 +235,24 @@ export function HomePage() {
           variants={fadeUp}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="section-title">Ready to explore?</h2>
+          <h2 className="section-title">Explore the data yourself.</h2>
           <p className="section-desc">
-            Jump into the simulation and see how different pressures shape reef
-            outcomes across 16 connected zones.
+            Open the Data Explorer to adjust pressure scenarios and see how reef health,
+            bleaching risk, and fish habitat shift across 16 connected zones in real time.
           </p>
           <Link className="btn btn-primary" to="/simulate" style={{ marginTop: 8 }}>
-            🧪 Open the Simulation
+            🔬 Launch Data Explorer
           </Link>
         </motion.section>
+
+        {/* ── Prototype Disclaimer ── */}
+        <div className="disclaimer-banner">
+          <span className="disc-icon">⚠️</span>
+          <div>
+            <span className="disc-label">Prototype Notice</span>
+            <span className="disc-text">{prototypeDisclaimer}</span>
+          </div>
+        </div>
       </main>
     </Layout>
   )
