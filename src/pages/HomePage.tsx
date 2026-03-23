@@ -63,6 +63,7 @@ export function HomePage() {
                   end={stat.end}
                   suffix={stat.suffix}
                   duration={1400}
+                  decimals={stat.decimals}
                 />
                 <span className="stat-label">{stat.label}</span>
               </motion.div>

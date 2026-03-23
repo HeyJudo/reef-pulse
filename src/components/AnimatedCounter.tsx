@@ -5,9 +5,16 @@ interface AnimatedCounterProps {
   duration?: number
   suffix?: string
   prefix?: string
+  decimals?: number
 }
 
-export function AnimatedCounter({ end, duration = 1200, suffix = '', prefix = '' }: AnimatedCounterProps) {
+export function AnimatedCounter({
+  end,
+  duration = 1200,
+  suffix = '',
+  prefix = '',
+  decimals = 0,
+}: AnimatedCounterProps) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
   const hasAnimated = useRef(false)
@@ -23,7 +30,9 @@ export function AnimatedCounter({ end, duration = 1200, suffix = '', prefix = ''
             const elapsed = now - startTime
             const progress = Math.min(elapsed / duration, 1)
             const eased = 1 - Math.pow(1 - progress, 3)
-            setCount(Math.round(eased * end))
+            const nextValue = eased * end
+            const factor = 10 ** decimals
+            setCount(Math.round(nextValue * factor) / factor)
 
             if (progress < 1) {
               requestAnimationFrame(animate)
@@ -41,11 +50,13 @@ export function AnimatedCounter({ end, duration = 1200, suffix = '', prefix = ''
     }
 
     return () => observer.disconnect()
-  }, [end, duration])
+  }, [decimals, end, duration])
 
   return (
     <span ref={ref} className="stat-number">
-      {prefix}{count}{suffix}
+      {prefix}
+      {count.toFixed(decimals)}
+      {suffix}
     </span>
   )
 }

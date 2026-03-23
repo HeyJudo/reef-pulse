@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CartesianGrid,
@@ -19,17 +19,31 @@ import { dataProvenance, modelConfidence, prototypeDisclaimer } from '../data/pi
 import type { SimulationInputs } from '../types'
 
 const defaultInputs = scenarioPresets[0].inputs
+const inputKeys: (keyof SimulationInputs)[] = [
+  'heatMultiplier',
+  'fishingMultiplier',
+  'siltationMultiplier',
+  'damageEvent',
+  'restorationBudget',
+  'months',
+]
 
 const cloneInputs = (inputs: SimulationInputs): SimulationInputs => ({ ...inputs })
+const inputsMatch = (left: SimulationInputs, right: SimulationInputs) =>
+  inputKeys.every((key) => left[key] === right[key])
 
 export function SimulationPage() {
   const [draftInputs, setDraftInputs] = useState<SimulationInputs>(cloneInputs(defaultInputs))
   const [appliedInputs, setAppliedInputs] = useState<SimulationInputs>(cloneInputs(defaultInputs))
   const [selectedPreset, setSelectedPreset] = useState(scenarioPresets[0].id)
   const [isRunning, setIsRunning] = useState(false)
+  const runTimeoutRef = useRef<number | null>(null)
 
   const baseline = useMemo(() => runSimulation(reefCells, defaultInputs), [])
   const result = useMemo(() => runSimulation(reefCells, appliedInputs), [appliedInputs])
+  const appliedPresetLabel =
+    scenarioPresets.find((preset) => inputsMatch(preset.inputs, appliedInputs))?.label ??
+    'Custom Scenario'
 
   const chartData = result.steps.map((step) => ({
     month: `M${step.month}`,
@@ -74,6 +88,10 @@ export function SimulationPage() {
   ]
 
   const handleRangeChange = (key: keyof SimulationInputs, value: string) => {
+    if (selectedPreset !== 'custom') {
+      setSelectedPreset('custom')
+    }
+
     setDraftInputs((current) => ({
       ...current,
       [key]: Number(value),
@@ -81,6 +99,10 @@ export function SimulationPage() {
   }
 
   const handlePresetChange = (presetId: string) => {
+    if (presetId === 'custom') {
+      return
+    }
+
     const preset = scenarioPresets.find((item) => item.id === presetId)
 
     if (!preset) {
@@ -92,18 +114,37 @@ export function SimulationPage() {
   }
 
   const resetScenario = () => {
+    if (runTimeoutRef.current !== null) {
+      window.clearTimeout(runTimeoutRef.current)
+      runTimeoutRef.current = null
+    }
+
+    setIsRunning(false)
     setSelectedPreset(scenarioPresets[0].id)
     setDraftInputs(cloneInputs(defaultInputs))
     setAppliedInputs(cloneInputs(defaultInputs))
   }
 
   const runModel = useCallback(() => {
+    if (runTimeoutRef.current !== null) {
+      window.clearTimeout(runTimeoutRef.current)
+    }
+
     setIsRunning(true)
-    setTimeout(() => {
+    runTimeoutRef.current = window.setTimeout(() => {
       setAppliedInputs(cloneInputs(draftInputs))
       setIsRunning(false)
+      runTimeoutRef.current = null
     }, 800)
   }, [draftInputs])
+
+  useEffect(() => {
+    return () => {
+      if (runTimeoutRef.current !== null) {
+        window.clearTimeout(runTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const sliders: { key: keyof SimulationInputs; label: string; icon: string }[] = [
     { key: 'heatMultiplier', label: 'Heat stress', icon: '🌡️' },
@@ -168,6 +209,7 @@ export function SimulationPage() {
                     value={selectedPreset}
                     onChange={(event) => handlePresetChange(event.target.value)}
                   >
+                    <option value="custom">Custom Scenario</option>
                     {scenarioPresets.map((preset) => (
                       <option key={preset.id} value={preset.id}>
                         {preset.label}
@@ -256,7 +298,7 @@ export function SimulationPage() {
                           {modelConfidence.score}% (±{modelConfidence.margin})
                         </span>
                         <span className="mini-badge">
-                          {scenarioPresets.find((preset) => preset.id === selectedPreset)?.label}
+                          {appliedPresetLabel}
                         </span>
                       </div>
                     </div>
@@ -396,3 +438,4 @@ export function SimulationPage() {
     </Layout>
   )
 }
+

@@ -34,4 +34,34 @@ describe('runSimulation', () => {
       baseline.finalStep.reefHealthScore,
     )
   })
+
+  it('lets protected recovery outperform the baseline', () => {
+    const baseline = runSimulation(reefCells, scenarioPresets[0].inputs)
+    const protectedRecovery = runSimulation(reefCells, scenarioPresets[3].inputs)
+
+    expect(protectedRecovery.finalStep.reefHealthScore).toBeGreaterThan(
+      baseline.finalStep.reefHealthScore,
+    )
+    expect(protectedRecovery.finalStep.fishHabitatScore).toBeGreaterThan(
+      baseline.finalStep.fishHabitatScore,
+    )
+  })
+
+  it('supports genuinely healthy outcomes under a low-stress restoration scenario', () => {
+    const result = runSimulation(reefCells, {
+      heatMultiplier: 0,
+      fishingMultiplier: 0,
+      siltationMultiplier: 0,
+      damageEvent: 0,
+      restorationBudget: 100,
+      months: 12,
+    })
+
+    const healthyOrRecoveringCells = result.finalStep.cells.filter(
+      (cell) => cell.state === 'healthy' || cell.state === 'recovering',
+    )
+
+    expect(healthyOrRecoveringCells.length).toBeGreaterThan(0)
+    expect(result.finalStep.reefHealthScore).toBeGreaterThan(60)
+  })
 })

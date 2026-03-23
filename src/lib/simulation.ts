@@ -17,33 +17,51 @@ const average = (values: number[]) =>
 // These coefficients tune the prototype toward visually readable month-to-month changes.
 // They are heuristic weights for the demo, not field-validated ecological parameters.
 const MODEL = {
-  heatInputWeight: 0.34,
-  monthlyHeatDrift: 0.65,
-  heatRestorationRelief: 0.18,
-  damageInputWeight: 0.22,
-  siltationDamageWeight: 0.08,
-  damageRestorationRelief: 0.34,
-  fishingInputWeight: 0.18,
-  restorationFishingRelief: 0.05,
-  siltationInputWeight: 0.16,
-  eventSiltationWeight: 0.04,
-  stressWeights: {
-    heat: 0.31,
-    damage: 0.26,
-    fishing: 0.22,
-    siltation: 0.21,
+  heatInputWeight: 0.35,
+  damageHeatWeight: 0.03,
+  siltationHeatWeight: 0.015,
+  heatReliefWeight: 0.35,
+  heatConvergenceRate: 0.35,
+  passiveCoolingWeight: 0.08,
+  damageInputWeight: 0.33,
+  siltationDamageWeight: 0.12,
+  damageReliefWeight: 0.4,
+  damageConvergenceRate: 0.28,
+  connectivityDamageRelief: 1.6,
+  fishingInputWeight: 0.35,
+  fishingReliefWeight: 0.12,
+  fishingConvergenceRate: 0.3,
+  siltationInputWeight: 0.34,
+  eventSiltationWeight: 0.08,
+  siltationReliefWeight: 0.1,
+  siltationConvergenceRate: 0.26,
+  stressThresholds: {
+    heat: 36,
+    damage: 18,
+    fishing: 24,
+    siltation: 20,
   },
-  coralStressPenalty: 0.085,
-  restorationCoralBoost: 0.45,
-  connectivityCoralBoost: 2.8,
-  recoveryCoralBoost: 0.4,
+  stressWeights: {
+    heat: 0.08,
+    damage: 0.09,
+    fishing: 0.05,
+    siltation: 0.06,
+  },
+  restorationCoralBoost: 0.16,
+  connectivityCoralBoost: 1.1,
+  recoveryCoralBoost: 0.1,
+  stableCoralBonus: 1.25,
+  resilientCoralBonus: 0.75,
   coralFishBoost: 0.05,
-  fishingFishPenalty: 0.22,
-  damageFishPenalty: 0.05,
-  connectivityFishBoost: 1.7,
-  restorationRecoveryBoost: 0.24,
-  connectivityRecoveryBoost: 1.4,
-  stressRecoveryPenalty: 0.03,
+  restorationFishBoost: 0.03,
+  connectivityFishBoost: 0.7,
+  fishingFishPenalty: 0.14,
+  damageFishPenalty: 0.06,
+  heatFishPenalty: 0.04,
+  restorationRecoveryBoost: 0.08,
+  connectivityRecoveryBoost: 0.9,
+  stressRecoveryPenalty: 0.18,
+  extremeHeatRecoveryPenalty: 0.04,
 } as const
 
 const getState = (
@@ -52,19 +70,19 @@ const getState = (
   damage: number,
   recoveryRate: number,
 ): ReefState => {
-  if (damage >= 72 || coralCover <= 32) {
+  if (damage >= 78 || coralCover <= 30) {
     return 'damaged'
   }
 
-  if (heatStress >= 64 && coralCover <= 52) {
+  if (heatStress >= 64 && coralCover <= 50) {
     return 'bleached'
   }
 
-  if (recoveryRate >= 12 && heatStress < 36 && damage < 36 && coralCover >= 58) {
+  if (recoveryRate >= 11 && heatStress < 38 && damage < 34 && coralCover >= 60) {
     return 'recovering'
   }
 
-  if (heatStress >= 44 || damage >= 42 || coralCover <= 56) {
+  if (heatStress >= 46 || damage >= 48 || coralCover <= 58) {
     return 'stressed'
   }
 
@@ -121,6 +139,8 @@ export const runSimulation = (
   initialCells: ReefCell[],
   inputs: SimulationInputs,
 ): SimulationResult => {
+  const baselineById = new Map(initialCells.map((cell) => [cell.id, cell]))
+
   let currentCells = initialCells.map<SimulationCell>((cell) => ({
     ...cell,
     state: getState(cell.coralCover, cell.heatStress, cell.damage, cell.recoveryRate),
@@ -139,6 +159,7 @@ export const runSimulation = (
       .map((cell) => cell.id)
 
     currentCells = currentCells.map((cell) => {
+      const baselineCell = baselineById.get(cell.id) ?? cell
       const connectedCells = currentCells.filter((candidate) =>
         cell.connectivity.includes(candidate.id),
       )
@@ -149,61 +170,96 @@ export const runSimulation = (
           : 0
 
       const restorationBoost = restorationTargets.includes(cell.id)
-        ? inputs.restorationBudget * 0.09
-        : inputs.restorationBudget * 0.03
+        ? inputs.restorationBudget * 0.14
+        : inputs.restorationBudget * 0.07
+
+      const heatTarget = clamp(
+        baselineCell.heatStress +
+          inputs.heatMultiplier * MODEL.heatInputWeight +
+          inputs.damageEvent * MODEL.damageHeatWeight +
+          inputs.siltationMultiplier * MODEL.siltationHeatWeight -
+          restorationBoost * MODEL.heatReliefWeight,
+      )
 
       const heatStress = clamp(
         cell.heatStress +
-          inputs.heatMultiplier * MODEL.heatInputWeight +
-          month * MODEL.monthlyHeatDrift -
-          restorationBoost * MODEL.heatRestorationRelief,
+          (heatTarget - cell.heatStress) * MODEL.heatConvergenceRate -
+          baselineCell.recoveryRate * MODEL.passiveCoolingWeight,
       )
-      const damage = clamp(
-        cell.damage +
+
+      const damageTarget = clamp(
+        baselineCell.damage +
           inputs.damageEvent * MODEL.damageInputWeight +
           inputs.siltationMultiplier * MODEL.siltationDamageWeight -
-          restorationBoost * MODEL.damageRestorationRelief,
+          restorationBoost * MODEL.damageReliefWeight,
+      )
+
+      const damage = clamp(
+        cell.damage +
+          (damageTarget - cell.damage) * MODEL.damageConvergenceRate -
+          neighborRecovery * MODEL.connectivityDamageRelief,
+      )
+
+      const fishingTarget = clamp(
+        baselineCell.fishingPressure +
+          inputs.fishingMultiplier * MODEL.fishingInputWeight -
+          inputs.restorationBudget * MODEL.fishingReliefWeight,
       )
 
       const fishingPressure = clamp(
         cell.fishingPressure +
-          inputs.fishingMultiplier * MODEL.fishingInputWeight -
-          inputs.restorationBudget * MODEL.restorationFishingRelief,
+          (fishingTarget - cell.fishingPressure) * MODEL.fishingConvergenceRate,
+      )
+
+      const siltationTarget = clamp(
+        baselineCell.siltation +
+          inputs.siltationMultiplier * MODEL.siltationInputWeight +
+          inputs.damageEvent * MODEL.eventSiltationWeight -
+          inputs.restorationBudget * MODEL.siltationReliefWeight,
       )
 
       const siltation = clamp(
         cell.siltation +
-          inputs.siltationMultiplier * MODEL.siltationInputWeight +
-          inputs.damageEvent * MODEL.eventSiltationWeight,
+          (siltationTarget - cell.siltation) * MODEL.siltationConvergenceRate,
       )
 
       const stressLoad =
-        heatStress * MODEL.stressWeights.heat +
-        damage * MODEL.stressWeights.damage +
-        fishingPressure * MODEL.stressWeights.fishing +
-        siltation * MODEL.stressWeights.siltation
+        Math.max(0, heatStress - MODEL.stressThresholds.heat) * MODEL.stressWeights.heat +
+        Math.max(0, damage - MODEL.stressThresholds.damage) * MODEL.stressWeights.damage +
+        Math.max(0, fishingPressure - MODEL.stressThresholds.fishing) *
+          MODEL.stressWeights.fishing +
+        Math.max(0, siltation - MODEL.stressThresholds.siltation) *
+          MODEL.stressWeights.siltation
+
+      const stabilityBonus = stressLoad < 1.3 ? MODEL.stableCoralBonus : 0
+      const resilienceBonus = stressLoad < 0.7 ? MODEL.resilientCoralBonus : 0
 
       const coralCover = clamp(
         cell.coralCover -
-          stressLoad * MODEL.coralStressPenalty +
+          stressLoad +
           restorationBoost * MODEL.restorationCoralBoost +
           neighborRecovery * MODEL.connectivityCoralBoost +
-          cell.recoveryRate * MODEL.recoveryCoralBoost,
+          cell.recoveryRate * MODEL.recoveryCoralBoost +
+          stabilityBonus +
+          resilienceBonus,
       )
 
       const fishBiomass = clamp(
         cell.fishBiomass +
-          coralCover * MODEL.coralFishBoost -
-          fishingPressure * MODEL.fishingFishPenalty -
-          damage * MODEL.damageFishPenalty +
-          neighborRecovery * MODEL.connectivityFishBoost,
+          Math.max(0, coralCover - 55) * MODEL.coralFishBoost +
+          restorationBoost * MODEL.restorationFishBoost +
+          neighborRecovery * MODEL.connectivityFishBoost -
+          Math.max(0, fishingPressure - 20) * MODEL.fishingFishPenalty -
+          Math.max(0, damage - 18) * MODEL.damageFishPenalty -
+          Math.max(0, heatStress - 40) * MODEL.heatFishPenalty,
       )
 
       const recoveryRate = clamp(
         cell.recoveryRate +
           restorationBoost * MODEL.restorationRecoveryBoost +
           neighborRecovery * MODEL.connectivityRecoveryBoost -
-          stressLoad * MODEL.stressRecoveryPenalty,
+          stressLoad * MODEL.stressRecoveryPenalty -
+          Math.max(0, heatStress - 48) * MODEL.extremeHeatRecoveryPenalty,
       )
 
       return {
