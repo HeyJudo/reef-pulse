@@ -26,21 +26,61 @@ const crisisCards = [
     icon: ThermometerIcon,
     title: '293 Marine Heatwave Days',
     body: 'Driven by El Nino, regions like Lingayen Gulf endure devastating temperature spikes that trigger multi-species mortality across vulnerable coral networks (DOST/UPMSI).',
+    sources: [
+      {
+        label: 'DOST / PCAARRD',
+        href: 'https://www.pcaarrd.dost.gov.ph/index.php/quick-information-dispatch-qid-articles/boosting-coral-reef-resilience-through-marine-heatwave-tracking-and-coral-reef-monitoring',
+      },
+      {
+        label: 'Research Study',
+        href: 'https://www.researchgate.net/publication/389901123_Spatiotemporal_Dynamics_of_Marine_Heatwaves_and_Ocean_Acidification_Affecting_Coral_Environments_in_the_Philippines',
+      },
+    ],
   },
   {
     icon: FactoryIcon,
     title: '51% Habitat Decline',
     body: `In Palawan's "last ecological frontier," unregulated nickel mining and coastal development are actively smothering pristine offshore reefs under toxic laterite siltation.`,
+    sources: [
+      {
+        label: 'Coral Reef Initiative',
+        href: 'https://cri.org/reports/broken-promises/',
+      },
+      {
+        label: 'Palawan 2024',
+        href: 'https://www.researchgate.net/publication/389571753_Palawan_UNESCO_Biosphere_Reserve_Philippines_State_of_the_Marine_Environment_2024',
+      },
+    ],
   },
   {
     icon: AnchorIcon,
     title: '0% in "Excellent" Condition',
     body: 'A recent nationwide assessment confirmed zero Philippine reefs remain in excellent condition, worsened by a systemic capture fishery loss of 45,000 metric tons annually.',
+    sources: [
+      {
+        label: 'SeafoodSource',
+        href: 'https://www.seafoodsource.com/news/environment-sustainability/philippine-fisheries-losing-45-000-tons-of-fish-annually-due-to-weak-law-enforcement-oceana-report-says',
+      },
+      {
+        label: 'Inquirer 2025',
+        href: 'https://newsinfo.inquirer.net/2192443/philippine-fish-production-falls-anew-in-2025-2',
+      },
+    ],
   },
   {
     icon: BadgeDollarIcon,
     title: '$4 Billion at Stake',
     body: 'The collapse of these ecosystems threatens the food security of a nation where over 42% of animal protein intake relies directly on rapidly declining marine resources.',
+    sources: [
+      {
+        label: 'FINS Report',
+        href: 'https://oceana.org/wp-content/uploads/sites/18/2024/09/MRAG-AP_State-of-FINS-PH_PUBLIC.pdf',
+      },
+      {
+        label: 'Reef Valuation',
+        href: "https://www.researchgate.net/publication/324139772_National_Estimates_of_Values_of_Philippine_Reefs'_Ecosystem_Services",
+      },
+    ],
   },
 ]
 
@@ -159,6 +199,22 @@ export function HomePage() {
                 </div>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
+                <div className="card-sources">
+                  <span className="card-sources-label">Sources</span>
+                  <div className="card-source-list">
+                    {item.sources.map((source) => (
+                      <a
+                        key={source.href}
+                        className="card-source-link"
+                        href={source.href}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {source.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </motion.article>
             ))}
           </div>
